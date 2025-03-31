@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Solitaire</title>
     <style>
       * {
@@ -166,6 +171,73 @@
         font-size: 24px;
         display: none;
         z-index: 2000;
+      }
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        .container {
+          max-width: 100%;
+        }
+
+        .card-slot {
+          width: 45px;
+          height: 65px;
+        }
+
+        .card {
+          width: 40px;
+          height: 60px;
+          padding: 2px;
+        }
+
+        .card-value {
+          font-size: 8px;
+        }
+
+        .card-suit {
+          font-size: 8px;
+        }
+
+        .card-center {
+          font-size: 12px;
+          transform: scale(1.2);
+        }
+
+        .tableau {
+          gap: 5px;
+          height: 300px;
+        }
+
+        .tableau-pile {
+          width: 45px;
+          min-height: 65px;
+        }
+
+        .tableau-pile .card {
+          top: 12px;
+        }
+
+        .controls {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .stats {
+          font-size: 12px;
+        }
+
+        button {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+
+        .win-message {
+          font-size: 18px;
+          padding: 15px 30px;
+        }
       }
     </style>
   </head>
@@ -454,6 +526,22 @@
         cardElement.dataset.index = index;
 
         cardElement.addEventListener("mousedown", handleDragStart);
+        cardElement.addEventListener("touchstart", handleTouchStart, {
+          passive: false,
+        });
+      }
+
+      // Handle touch start
+      function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousedown", {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true,
+          cancelable: true,
+        });
+        this.dispatchEvent(mouseEvent);
       }
 
       // Setup right-click functionality for a card
@@ -461,6 +549,17 @@
         cardElement.addEventListener("contextmenu", function (e) {
           e.preventDefault(); // Prevent the default context menu
           handleRightClick(e, sourceId, index);
+        });
+
+        // Add double-tap handler for mobile
+        cardElement.addEventListener("touchend", function (e) {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+          if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            handleRightClick(e, sourceId, index);
+          }
+          lastTap = currentTime;
         });
       }
 
@@ -968,6 +1067,42 @@
 
       // Initialize the game on load
       window.addEventListener("load", initGame);
+
+      // Modify existing event listeners to handle touch events
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          if (isDragging) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleDragMove({
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              preventDefault: () => e.preventDefault(),
+            });
+          }
+        },
+        { passive: false }
+      );
+
+      document.addEventListener(
+        "touchend",
+        (e) => {
+          if (isDragging) {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            handleDragEnd({
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              preventDefault: () => e.preventDefault(),
+            });
+          }
+        },
+        { passive: false }
+      );
+
+      // Add double-tap handling for right-click alternative
+      let lastTap = 0;
     </script>
   </body>
 </html>
