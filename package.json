@@ -1,0 +1,16 @@
+{
+  "name": "vanilla-es2022-ai-workflow",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "npm test -- --watch",
+    "e2e": "playwright test",
+    "lint:security": "snyk code test",
+    "deps:security": "snyk test"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "@playwright/test": "^1.55.0"
+  }
+}
